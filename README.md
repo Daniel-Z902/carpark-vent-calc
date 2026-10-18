@@ -2,8 +2,9 @@
 
 Car park mechanical ventilation calculations for Australian projects. This is
 a Python port of n2 Engineering Consultants' car park ventilation workbook
-(`carpark_calcs.xlsx`), which has one sheet for each AS 1668.2 edition
-(2024, 2012, and the superseded 2002 and 1991).
+(`carpark_calcs.xlsx`). It implements the AS 1668.2-2012 sheet (the edition
+currently in use, and the default) and the AS 1668.2-2024 sheet, which is
+fully supported and selected with `edition: "2024"`.
 
 For each car park level it calculates the candidate exhaust flows (minimum,
 car movement, staff, floor area), the governing **design exhaust air flow**,
@@ -32,7 +33,8 @@ Requires Python 3.10+. Dependencies: `openpyxl`, `PyYAML`, and optionally
 ```bash
 carpark-vent run examples/example_2012.yaml -o build/        # xlsx, html, pdf, json
 carpark-vent run my_job.yaml --formats xlsx,pdf --excel-formulas
-carpark-vent template 2024 > my_job.yaml                      # starter input
+carpark-vent template > my_job.yaml                           # 2012 starter (the default)
+carpark-vent template 2024 > my_job.yaml                      # 2024 starter
 carpark-vent editions                                          # constants per edition
 python -m carpark_vent ...                                     # same thing
 ```
@@ -44,7 +46,7 @@ calculated.
 ### Input file (YAML or JSON)
 
 ```yaml
-edition: "2012"                 # 2024 | 2012 | 2002 | 1991
+edition: "2012"                 # optional; 2012 (default) or 2024
 project:
   name: Example residential basement
   number: N2-EXAMPLE
@@ -66,10 +68,12 @@ levels:
     A: 2344.15                  # m2
 ```
 
-Each edition uses its own fields: 2024 uses `P1`/`P2` instead of `P`, 2002
-has no `E`, and 1991 uses `d1`-`d4` with no `T`/`E`/`F`. Unknown or unused
-keys are rejected so typos can't slip through. Run `carpark-vent template
-<edition>` for a starting point.
+2012 uses one parking usage factor `P`. 2024 uses `P1` for the spaces on
+the level and `P2` for the spaces exiting through it. Both editions use
+`T`, `E`, `F`, `n1`, `n2`, `d1`, `d2` and `A`. Unknown or unused keys are
+rejected so typos can't slip through. Omit `edition` and the file is read
+as 2012. Run `carpark-vent template` (or `carpark-vent template 2024`) for
+a starting point.
 
 ### Example
 
@@ -102,13 +106,13 @@ write_excel(res, "build/job.xlsx"); write_html(res, "build/job.html"); write_pdf
 pytest
 ```
 
-* `tests/test_golden_excel.py` compares against Excel's cached values in the
-  workbook (`tests/golden/excel_cached.json`), with a relative tolerance of
-  1e-6.
+* `tests/test_golden_excel.py` compares the 2012 example against Excel's
+  cached values (`tests/golden/excel_cached.json`), with a relative
+  tolerance of 1e-6. The 2024 sheet in the workbook is an empty template.
 * `tests/test_golden_libreoffice.py` compares against synthetic cases. These
   were made by writing inputs into the unchanged workbook formulas and
   recalculating with LibreOffice. They cover the 2024 sheet and non-zero
-  queues.
+  queues on both editions.
 * The live-formula round trip and the workbook drift check are skipped
   automatically when `soffice` or `carpark_calcs.xlsx` is not available.
 

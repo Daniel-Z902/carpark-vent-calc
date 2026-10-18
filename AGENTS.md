@@ -2,9 +2,10 @@
 
 ## What this is
 A Python port of n2's car park ventilation workbook (`carpark_calcs.xlsx`,
-one sheet per AS 1668.2 edition: 2024, 2012, 2002, 1991). The workbook is the
-reference. Results must keep matching its cached values. Read
-`docs/METHOD.md` before changing any calculation.
+the AS 1668.2-2012 and AS 1668.2-2024 sheets). 2012 is the default edition
+(the one currently in use). 2024 is fully supported and selected explicitly.
+The workbook is the reference. Results must keep matching its cached values.
+Read `docs/METHOD.md` before changing any calculation.
 
 ## Licensing rule (hard requirement)
 - **Never** add text, tables, figures, clause wording, notes or definitions

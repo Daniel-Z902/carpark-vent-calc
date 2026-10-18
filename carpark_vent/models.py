@@ -11,7 +11,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from carpark_vent.editions import Edition, get_edition
+from carpark_vent.editions import DEFAULT_EDITION, Edition, get_edition
 
 
 @dataclass(frozen=True)
@@ -37,16 +37,13 @@ class Level:
     Not every field is used by every edition; see ``Edition.level_fields``.
 
     n1  car spaces on this level
-    n2  car spaces elsewhere whose exit (and, for 1991, entry) route passes through this level
+    n2  car spaces elsewhere whose exit route passes through this level
     d1  mean exit driving distance for cars parked on this level (m)
-    d2  2002/2012/2024: mean exit distance through this level for the n2 cars (m);
-        1991: mean entry distance for cars parked on this level (m)
-    d3  1991 only: mean exit distance through this level for the n2 cars (m)
-    d4  1991 only: mean entry distance through this level for the n2 cars (m)
+    d2  mean exit distance through this level for the n2 cars (m)
     T   vehicle type factor
-    E   staff exposure factor (2012, 2024)
-    F   staff usage factor (2002, 2012, 2024)
-    P   parking usage factor (1991, 2002, 2012)
+    E   staff exposure factor
+    F   staff usage factor
+    P   parking usage factor (2012)
     P1  parking usage factor for the n1 cars (2024)
     P2  parking usage factor for the n2 cars (2024)
     A   floor area (m2)
@@ -58,8 +55,6 @@ class Level:
     n2: float = 0.0
     d1: float = 0.0
     d2: float = 0.0
-    d3: float = 0.0
-    d4: float = 0.0
     T: float = 1.0
     E: float = 1.0
     F: float = 1.0
@@ -73,14 +68,17 @@ class Level:
 
 @dataclass(frozen=True)
 class Project:
-    """A full calculation: header, edition, global inputs and levels."""
+    """A full calculation: header, edition, global inputs and levels.
 
-    edition_key: str
+    ``edition_key`` defaults to 2012. Pass ``"2024"`` to use that edition.
+    """
+
     levels: tuple[Level, ...]
+    edition_key: str = DEFAULT_EDITION
     info: ProjectInfo = field(default_factory=ProjectInfo)
-    exit_lanes: float | None = 1.0      # workbook "L = No. of exit lanes" (O12/N12/K12); None = queue not assessed
-    makeup_ratio: float | None = None   # None -> edition default (0.8 or 0.75)
-    queue_note: str = "No dedicated queuing areas applicable"   # workbook L19 banner (2012/2024)
+    exit_lanes: float | None = 1.0      # workbook "L = No. of exit lanes" (O12); None = queue not assessed
+    makeup_ratio: float | None = None   # None -> edition default (0.8)
+    queue_note: str = "No dedicated queuing areas applicable"   # workbook L19 banner
 
     @property
     def edition(self) -> Edition:

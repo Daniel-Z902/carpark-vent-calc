@@ -2,12 +2,9 @@
 with synthetic inputs (tests/golden/libreoffice_recalc.json, built by
 tools/make_lo_scenarios.py).  Covers the 2024 sheet and non-zero queues.
 
-Two documented workbook quirks are asserted rather than hidden:
-* rows whose queue cells are typed-in 0 instead of formulas (2012/2024 rows 34, 37-41);
-* 2002 rows 36-39 use 3.5 x A while rows 33-35 and the B10 label use 3 x A.
+One documented workbook quirk is asserted rather than hidden: rows whose
+queue cells are typed-in 0 instead of formulas (2012/2024 rows 34 and 37-41).
 """
-
-import dataclasses
 
 import pytest
 
@@ -25,11 +22,8 @@ def test_matches_libreoffice(case):
     ed = project.edition
     tot_design = tot_makeup = 0.0
     for lv, exp in zip(project.levels, case["expected"]["levels"]):
-        row_ed = ed
-        if exp["sheet_area_rate"] != ed.area_rate_ls_per_m2:
-            assert ed.key == "2002" and exp["sheet_area_rate"] == 3.5  # known quirk only
-            row_ed = dataclasses.replace(ed, area_rate_ls_per_m2=exp["sheet_area_rate"])
-        r = calculate_level(row_ed, lv, project.exit_lanes, project.effective_makeup_ratio)
+        assert exp["sheet_area_rate"] == ed.area_rate_ls_per_m2
+        r = calculate_level(ed, lv, project.exit_lanes, project.effective_makeup_ratio)
         for sym, val in r.components_ls.items():
             assert close(val, exp[sym]), f"row {exp['row']} {sym}: {val} != {exp[sym]}"
         assert close(r.design_exhaust_m3s, exp["design"])
@@ -49,7 +43,7 @@ def test_matches_libreoffice(case):
 
 
 def test_scenarios_exercise_nonzero_queues_on_every_edition():
-    for key in ("2024", "2012", "2002", "1991"):
+    for key in ("2024", "2012"):
         assert any(
             r["queue"] > 0 for c in CASES if c["input"]["edition"] == key for r in c["expected"]["levels"]
         ), key

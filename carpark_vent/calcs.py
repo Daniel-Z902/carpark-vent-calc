@@ -34,33 +34,18 @@ def qa_2012(n1: float, n2: float, d1: float, d2: float, P: float, T: float, E: f
     return P * 0.85 * (100 * n1 + n1 * d1 + n2 * d2) * T * E
 
 
-def qa_2002(n1: float, n2: float, d1: float, d2: float, P: float) -> float:
-    """2002 sheet L33: =P*0.85*(100*n1+n1*d1+n2*d2)   [l/s]  (no T or E term)."""
-    return P * 0.85 * (100 * n1 + n1 * d1 + n2 * d2)
-
-
-def qb_exit_1991(n1: float, n2: float, d1: float, d3: float, P: float) -> float:
-    """1991 sheet L27 (exit): =P*1.2*(100*n1+n1*d1+n2*d3)   [l/s]."""
-    return P * 1.2 * (100 * n1 + n1 * d1 + n2 * d3)
-
-
-def qc_entry_1991(n1: float, n2: float, d2: float, d4: float, P: float) -> float:
-    """1991 sheet M27 (entry): =P*0.4*(100*n1+n1*d2+n2*d4)   [l/s]."""
-    return P * 0.4 * (100 * n1 + n1 * d2 + n2 * d4)
-
-
 # --------------------------------------------------------------------------
 # Staff, area and minimum components
 # --------------------------------------------------------------------------
 
 
 def staff_flow(staff_flow_ls: float, F: float, T: float) -> float:
-    """Qb: =1000*F*T (2024 O34) or =2000*F*T (2012 N34, 2002 M33)   [l/s]."""
+    """Qb: =1000*F*T (2024 O34) or =2000*F*T (2012 N34)   [l/s]."""
     return staff_flow_ls * F * T
 
 
 def area_flow(rate_ls_per_m2: float, A: float) -> float:
-    """Qc (Qd for 1991): =rate*A, rate 1.5 / 2.5 / 3 / 3.5 l/s.m2   [l/s]."""
+    """Qc: =rate*A, rate 1.5 (2024) or 2.5 (2012) l/s.m2   [l/s]."""
     return rate_ls_per_m2 * A
 
 
@@ -70,7 +55,7 @@ def design_exhaust_m3s(components_ls: list[float]) -> float:
 
 
 def makeup_m3s(ratio: float, design_m3s: float) -> float:
-    """=$Q$31*P34 (2012/2024) or =0.75*O33 (2002/1991)   [m3/s]."""
+    """=$Q$31 times the design-exhaust cell (2012 P34, 2024 Q34)   [m3/s]."""
     return ratio * design_m3s
 
 
@@ -135,44 +120,25 @@ def _components(ed: Edition, lv: Level) -> tuple[dict[str, float], list[tuple[st
             f" x {_g(lv.E)} x {_g(lv.T)}",
             comps["Qa"],
         ))
-        comps["Qb"] = staff_flow(ed.staff_flow_ls, lv.F, lv.T)  # type: ignore[arg-type]
+        comps["Qb"] = staff_flow(ed.staff_flow_ls, lv.F, lv.T)
         steps.append(("Qb", f"{_g(ed.staff_flow_ls)} x {_g(lv.F)} x {_g(lv.T)}", comps["Qb"]))
         comps["Qc"] = area_flow(ed.area_rate_ls_per_m2, lv.A)
         steps.append(("Qc", f"{_g(ed.area_rate_ls_per_m2)} x {_g(lv.A)}", comps["Qc"]))
-    elif ed.key in ("2012", "2002"):
+    elif ed.key == "2012":
         P = need("P")
         comps["Q"] = ed.q_min_ls
         steps.append(("Q", "minimum", comps["Q"]))
-        if ed.key == "2012":
-            comps["Qa"] = qa_2012(lv.n1, lv.n2, lv.d1, lv.d2, P, lv.T, lv.E)
-            expr = (f"{_g(P)} x 0.85 x (100 x {_g(lv.n1)} + {_g(lv.n1)} x {_g(lv.d1)} + {_g(lv.n2)} x {_g(lv.d2)})"
-                    f" x {_g(lv.T)} x {_g(lv.E)}")
-        else:
-            comps["Qa"] = qa_2002(lv.n1, lv.n2, lv.d1, lv.d2, P)
-            expr = f"{_g(P)} x 0.85 x (100 x {_g(lv.n1)} + {_g(lv.n1)} x {_g(lv.d1)} + {_g(lv.n2)} x {_g(lv.d2)})"
-        steps.append(("Qa", expr, comps["Qa"]))
-        comps["Qb"] = staff_flow(ed.staff_flow_ls, lv.F, lv.T)  # type: ignore[arg-type]
+        comps["Qa"] = qa_2012(lv.n1, lv.n2, lv.d1, lv.d2, P, lv.T, lv.E)
+        steps.append((
+            "Qa",
+            f"{_g(P)} x 0.85 x (100 x {_g(lv.n1)} + {_g(lv.n1)} x {_g(lv.d1)} + {_g(lv.n2)} x {_g(lv.d2)})"
+            f" x {_g(lv.T)} x {_g(lv.E)}",
+            comps["Qa"],
+        ))
+        comps["Qb"] = staff_flow(ed.staff_flow_ls, lv.F, lv.T)
         steps.append(("Qb", f"{_g(ed.staff_flow_ls)} x {_g(lv.F)} x {_g(lv.T)}", comps["Qb"]))
         comps["Qc"] = area_flow(ed.area_rate_ls_per_m2, lv.A)
         steps.append(("Qc", f"{_g(ed.area_rate_ls_per_m2)} x {_g(lv.A)}", comps["Qc"]))
-    elif ed.key == "1991":
-        P = need("P")
-        comps["Qa"] = ed.q_min_ls
-        steps.append(("Qa", "minimum", comps["Qa"]))
-        comps["Qb"] = qb_exit_1991(lv.n1, lv.n2, lv.d1, lv.d3, P)
-        steps.append((
-            "Qb",
-            f"{_g(P)} x 1.2 x (100 x {_g(lv.n1)} + {_g(lv.n1)} x {_g(lv.d1)} + {_g(lv.n2)} x {_g(lv.d3)})",
-            comps["Qb"],
-        ))
-        comps["Qc"] = qc_entry_1991(lv.n1, lv.n2, lv.d2, lv.d4, P)
-        steps.append((
-            "Qc",
-            f"{_g(P)} x 0.4 x (100 x {_g(lv.n1)} + {_g(lv.n1)} x {_g(lv.d2)} + {_g(lv.n2)} x {_g(lv.d4)})",
-            comps["Qc"],
-        ))
-        comps["Qd"] = area_flow(ed.area_rate_ls_per_m2, lv.A)
-        steps.append(("Qd", f"{_g(ed.area_rate_ls_per_m2)} x {_g(lv.A)}", comps["Qd"]))
     else:  # pragma: no cover - guarded by get_edition
         raise ValueError(ed.key)
     return comps, steps, warnings

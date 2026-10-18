@@ -2,6 +2,7 @@
 
     carpark-vent run examples/example_2012.yaml -o build/ --formats xlsx,html,pdf,json
     carpark-vent editions
+    carpark-vent template          # 2012 starter, the default edition
     carpark-vent template 2024 > my_project.yaml
 """
 
@@ -14,7 +15,7 @@ from pathlib import Path
 
 from carpark_vent import __version__
 from carpark_vent.calcs import calculate_project
-from carpark_vent.editions import EDITIONS, get_edition
+from carpark_vent.editions import DEFAULT_EDITION, EDITIONS, get_edition
 from carpark_vent.loader import load_project
 from carpark_vent.models import ProjectResult
 from carpark_vent.report.common import fmt
@@ -77,8 +78,15 @@ def cmd_run(a: argparse.Namespace) -> int:
 
 
 def cmd_editions(_: argparse.Namespace) -> int:
-    for ed in EDITIONS.values():
-        print(f"{ed.key}  {ed.title}{'  (superseded)' if ed.superseded else ''}")
+    order = (DEFAULT_EDITION, *(k for k in EDITIONS if k != DEFAULT_EDITION))
+    for ed in (EDITIONS[k] for k in order):
+        flags = []
+        if ed.key == DEFAULT_EDITION:
+            flags.append("default")
+        if ed.superseded:
+            flags.append("superseded")
+        suffix = f"  ({', '.join(flags)})" if flags else ""
+        print(f"{ed.key}  {ed.title}{suffix}")
         for sym, expr in ed.workbook_expressions.items():
             print(f"      {sym:<3} = {expr}")
         print(f"      make-up ratio {ed.makeup_ratio_default:g}; level fields: {', '.join(ed.level_fields)}")
@@ -88,12 +96,12 @@ def cmd_editions(_: argparse.Namespace) -> int:
     return 0
 
 
-TEMPLATE_VALUES = {"n1": 50, "n2": 0, "d1": 60.0, "d2": 0.0, "d3": 0.0, "d4": 0.0, "T": "none", "E": 1, "F": 1,
+TEMPLATE_VALUES = {"n1": 50, "n2": 0, "d1": 60.0, "d2": 0.0, "T": "none", "E": 1, "F": 1,
                    "P": "residential", "P1": "residential", "P2": "residential", "A": 2000.0}
 
 
 def cmd_template(a: argparse.Namespace) -> int:
-    ed = get_edition(a.edition)
+    ed = get_edition(a.edition or DEFAULT_EDITION)
     lines = [
         f"# carpark_vent input - {ed.title}",
         f'edition: "{ed.key}"',
@@ -135,8 +143,9 @@ def main(argv: list[str] | None = None) -> int:
     r.set_defaults(func=cmd_run)
     e = sub.add_parser("editions", help="list supported editions and their constants")
     e.set_defaults(func=cmd_editions)
-    t = sub.add_parser("template", help="print a starter YAML input for an edition")
-    t.add_argument("edition", choices=list(EDITIONS))
+    t = sub.add_parser("template", help=f"print a starter YAML input (default edition: {DEFAULT_EDITION})")
+    t.add_argument("edition", nargs="?", default=DEFAULT_EDITION, choices=list(EDITIONS),
+                   help=f"2012 (default) or 2024")
     t.set_defaults(func=cmd_template)
     a = ap.parse_args(argv)
     try:

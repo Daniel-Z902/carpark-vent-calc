@@ -3,7 +3,7 @@
 import pytest
 
 from carpark_vent import calcs
-from carpark_vent.editions import EDITIONS, get_edition
+from carpark_vent.editions import DEFAULT_EDITION, get_edition
 from carpark_vent.loader import project_from_dict
 from carpark_vent.models import Level
 
@@ -15,11 +15,6 @@ def test_qa_2024_hand_calc():
 
 def test_qa_2012_hand_calc():
     assert calcs.qa_2012(53, 64, 54.505, 68.97, 0.3, 1, 1) == pytest.approx(3213.725475)
-
-
-def test_1991_exit_and_entry():
-    assert calcs.qb_exit_1991(148, 180, 45, 15, 0.5) == pytest.approx(14496)
-    assert calcs.qc_entry_1991(148, 180, 45, 15, 0.5) == pytest.approx(4832)
 
 
 def test_queue_clamped_at_zero_and_positive_branch():
@@ -59,6 +54,8 @@ def test_factor_names_resolve():
     {"edition": "2012", "levels": [{"name": "B1", "n1": 1, "P": 0.3, "P1": 0.3}]},   # P1 not a 2012 field
     {"edition": "2012", "levels": [{"name": "B1", "n1": 1, "P": "carwash"}]},          # unknown factor
     {"edition": "1999", "levels": [{"name": "B1", "n1": 1}]},                          # unknown edition
+    {"edition": "2002", "levels": [{"name": "B1", "n1": 1, "P": 0.3}]},               # removed edition
+    {"edition": "1991", "levels": [{"name": "B1", "n1": 1, "P": 0.3}]},               # removed edition
     {"edition": "2012", "levels": [{"name": "B1", "n1": 1, "p": 0.3}]},                # typo key
     {"edition": "2012", "levels": []},
 ])
@@ -72,8 +69,9 @@ def test_missing_P_raises():
         calcs.calculate_project(project_from_dict({"edition": "2012", "levels": [{"name": "B1", "n1": 1}]}))
 
 
-def test_superseded_editions_warn():
-    for key in ("2002", "1991"):
-        assert EDITIONS[key].superseded
-        res = calcs.calculate_project(project_from_dict({"edition": key, "levels": [{"name": "B", "n1": 1, "P": 0.3}]}))
-        assert any("SUPERSEDED" in w for w in res.warnings)
+def test_omitted_edition_defaults_to_2012():
+    p = project_from_dict({"levels": [{"name": "B1", "n1": 1, "P": 0.3}]})
+    assert p.edition_key == DEFAULT_EDITION == "2012"
+    res = calcs.calculate_project(p)
+    assert res.project.edition.title == "AS 1668.2-2012"
+    assert res.levels[0].components_ls["Q"] == 2000

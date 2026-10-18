@@ -56,13 +56,11 @@ BOX = Border(left=HAIR, right=HAIR, top=HAIR, bottom=HAIR)
 WIDTHS = {  # from the source sheets
     "2024": {"A": 13.3, "B": 22.7, "C": 5.7, "L": 7.3, "N": 7.7, "O": 6.6, "P": 10.6, "Q": 10.0, "S": 6.1, "T": 7.4, "U": 7.6},
     "2012": {"A": 13.3, "B": 22.7, "C": 5.7, "K": 9.7, "L": 7.3, "N": 7.7, "O": 6.6, "P": 10.6, "Q": 10.0, "R": 5.9, "S": 6.1, "T": 7.4},
-    "2002": {"A": 11.1, "B": 22.7, "C": 5.7, "J": 9.7, "K": 7.3, "M": 7.7, "N": 6.6, "O": 10.6, "P": 10.0, "Q": 5.9, "R": 6.1, "S": 7.4},
-    "1991": {"A": 11.1, "B": 30.6, "C": 5.7, "J": 9.7, "K": 7.3, "M": 7.7, "N": 6.6, "O": 10.6, "P": 10.0, "Q": 5.9, "R": 6.1, "S": 7.4},
 }
 HEADERS = {"name": "Level", "comment": "Comment", "design": "Design Exhaust Air Flow",
            "makeup": "Design Make-up Air Flow", "lb_lhu": "LB LHU", "llu": "LLU", "queue": "Queue Exhaust"}
-UNITS = {"d1": "(m)", "d2": "(m)", "d3": "(m)", "d4": "(m)", "A": "(m2)", "Q": "(l/s)", "Qa": "(l/s)",
-         "Qb": "(l/s)", "Qc": "(l/s)", "Qd": "(l/s)", "design": "(m3/s)", "makeup": "(m3/s)", "lb_lhu": "(m)",
+UNITS = {"d1": "(m)", "d2": "(m)", "A": "(m2)", "Q": "(l/s)", "Qa": "(l/s)",
+         "Qb": "(l/s)", "Qc": "(l/s)", "design": "(m3/s)", "makeup": "(m3/s)", "lb_lhu": "(m)",
          "llu": "(m)", "queue": "(m3/s)"}
 
 
@@ -95,7 +93,7 @@ def _mirror_sheet(ws, res: ProjectResult, formulas: bool) -> None:
     proj = res.project
     ed = proj.edition
     lay = LAYOUTS[ed.key]
-    title_col = "J" if ed.key in ("2024", "2012") else "I"
+    title_col = "J"
 
     # --- header block --------------------------------------------------------
     _put(ws, "A1", "Car Park Mechanical Ventilation Calculation - ", bold=True, size=14)
@@ -154,16 +152,15 @@ def _mirror_sheet(ws, res: ProjectResult, formulas: bool) -> None:
     for i, (sym, text) in enumerate(QUEUE_LEGEND[1:]):
         _put(ws, f"{qc}{14 + i}", f"{sym} =")
         _put(ws, f"{_shift(qc, 1)}{14 + i}", text)
-    if ed.key in ("2024", "2012") and proj.queue_note:
+    if proj.queue_note:
         _put(ws, f"{qc}19", proj.queue_note, fill=F_BANNER, align="left")
         ws.merge_cells(f"{qc}19:{_shift(qc, 9)}19")
 
     ratio = proj.effective_makeup_ratio
-    if lay.makeup_ratio_cell:
-        rc = lay.makeup_ratio_cell
-        _put(ws, f"{rc[0]}{int(rc[1:]) - 1}", "75-90%", align="center")
-        _put(ws, f"{_shift(rc[0], -1)}{rc[1:]}", "Make-up ratio", size=9, align="right")
-        _put(ws, rc, ratio, fill=F_RATIO, align="center", fmt="0%")
+    rc = lay.makeup_ratio_cell
+    _put(ws, f"{rc[0]}{int(rc[1:]) - 1}", "75-90%", align="center")
+    _put(ws, f"{_shift(rc[0], -1)}{rc[1:]}", "Make-up ratio", size=9, align="right")
+    _put(ws, rc, ratio, fill=F_RATIO, align="center", fmt="0%")
 
     # --- level table --------------------------------------------------------------
     hr, ur, r0 = lay.header_row, lay.units_row, lay.first_data_row
@@ -178,7 +175,7 @@ def _mirror_sheet(ws, res: ProjectResult, formulas: bool) -> None:
     ws.row_dimensions[hr].height = 36
 
     lanes_ref = _abs(lay.exit_lanes_cell)
-    ratio_ref = _abs(lay.makeup_ratio_cell) if lay.makeup_ratio_cell else None
+    ratio_ref = _abs(lay.makeup_ratio_cell)
     syms = list(ed.component_symbols)
     for i, lr in enumerate(res.levels):
         r = r0 + i
@@ -189,7 +186,7 @@ def _mirror_sheet(ws, res: ProjectResult, formulas: bool) -> None:
             _put(ws, ref[key], val if val != "" else None, fill=F_INPUT, border=BOX,
                  align=None if key in ("name", "comment") else "center")
         if formulas:
-            f = _row_formulas(ed.key, ref, lanes_ref, ratio_ref, ratio, proj.exit_lanes is not None)
+            f = _row_formulas(ed.key, ref, lanes_ref, ratio_ref, proj.exit_lanes is not None)
         else:
             f = {**lr.components_ls, "design": lr.design_exhaust_m3s, "makeup": lr.makeup_m3s,
                  "lb_lhu": lr.queue_lb_lhu_m, "llu": lr.queue_llu_m, "queue": lr.queue_exhaust_m3s}
@@ -230,8 +227,7 @@ def _mirror_sheet(ws, res: ProjectResult, formulas: bool) -> None:
     ws.oddFooter.right.text = "Printed: &D @ &T"
 
 
-def _row_formulas(key: str, c: dict[str, str], lanes: str, ratio_ref: str | None, ratio: float,
-                  queue: bool) -> dict[str, str | None]:
+def _row_formulas(key: str, c: dict[str, str], lanes: str, ratio_ref: str, queue: bool) -> dict[str, str | None]:
     """Live formulas in the style of the source workbook (uniform for every row)."""
     ed = EDITIONS[key]
     f: dict[str, str | None] = {}
@@ -247,21 +243,11 @@ def _row_formulas(key: str, c: dict[str, str], lanes: str, ratio_ref: str | None
         f["Qb"] = f"={ed.staff_flow_ls:g}*{c['F']}*{c['T']}"
         f["Qc"] = f"={ed.area_rate_ls_per_m2:g}*{c['A']}"
         pq = c["P"]
-    elif key == "2002":
-        f["Q"] = "=$B$7"
-        f["Qa"] = f"={c['P']}*0.85*(100*{c['n1']}+{c['n1']}*{c['d1']}+{c['n2']}*{c['d2']})"
-        f["Qb"] = f"={ed.staff_flow_ls:g}*{c['F']}*{c['T']}"
-        f["Qc"] = f"={ed.area_rate_ls_per_m2:g}*{c['A']}"
-        pq = c["P"]
-    else:
-        f["Qa"] = "=$B$7"
-        f["Qb"] = f"={c['P']}*1.2*(100*{c['n1']}+{c['n1']}*{c['d1']}+{c['n2']}*{c['d3']})"
-        f["Qc"] = f"={c['P']}*0.4*(100*{c['n1']}+{c['n1']}*{c['d2']}+{c['n2']}*{c['d4']})"
-        f["Qd"] = f"={ed.area_rate_ls_per_m2:g}*{c['A']}"
-        pq = c["P"]
+    else:  # pragma: no cover - guarded by get_edition
+        raise ValueError(key)
     syms = ed.component_symbols
     f["design"] = f"=MAX({c[syms[0]]}:{c[syms[-1]]})/1000"
-    f["makeup"] = f"={ratio_ref or repr(ratio)}*{c['design']}"
+    f["makeup"] = f"={ratio_ref}*{c['design']}"
     if queue:
         base = f"2.2*({c['n1']}/{lanes})*{pq}"
         f["lb_lhu"] = f'=IF({lanes}="","",IF(({base}-200)<0,0,{base}-200))'

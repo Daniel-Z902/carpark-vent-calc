@@ -21,7 +21,7 @@ class SheetLayout:
     total_row: int
     q_min_cell: str                 # B7
     exit_lanes_cell: str
-    makeup_ratio_cell: str | None   # None where the sheet hard-codes 0.75
+    makeup_ratio_cell: str          # Q31 on both supported sheets
     # field -> column letter.  Inputs use Level field names; outputs use
     # component symbols plus the keys below.
     inputs: Mapping[str, str]
@@ -51,24 +51,6 @@ LAYOUTS: Mapping[str, SheetLayout] = MappingProxyType(
                                           llu="S", queue="T")),
             totals=MappingProxyType(dict(n1="C", A="K", design="P", makeup="Q")),
             queue_block_col="L",
-        ),
-        "2002": SheetLayout(
-            "2002", 31, 32, 33, 39, 40, "B7", "N12", None,
-            inputs=MappingProxyType(dict(name="A", comment="B", n1="C", n2="D", d1="E", d2="F", T="G", F="H",
-                                         P="I", A="J")),
-            outputs=MappingProxyType(dict(Q="K", Qa="L", Qb="M", Qc="N", design="O", makeup="P", lb_lhu="Q",
-                                          llu="R", queue="S")),
-            totals=MappingProxyType(dict(n1="C", design="O", makeup="P")),
-            queue_block_col="K",
-        ),
-        "1991": SheetLayout(
-            "1991", 25, 26, 27, 33, 34, "B7", "K12", None,
-            inputs=MappingProxyType(dict(name="A", comment="B", n1="C", n2="D", d1="E", d2="F", d3="G", d4="H",
-                                         P="I", A="J")),
-            outputs=MappingProxyType(dict(Qa="K", Qb="L", Qc="M", Qd="N", design="O", makeup="P", lb_lhu="Q",
-                                          llu="R", queue="S")),
-            totals=MappingProxyType(dict(n1="C", design="O", makeup="P")),
-            queue_block_col="H",
         ),
     }
 )

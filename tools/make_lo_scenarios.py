@@ -1,8 +1,8 @@
 """Generate extra golden cases by recalculating Daniel's own sheets with LibreOffice.
 
-The workbook ships with example data only on the 2012, 2002 and 1991 sheets
-(and every queue result is 0).  To cover the 2024 sheet and non-zero queue
-lengths, this script writes synthetic inputs into the *unchanged* formula
+The workbook ships with example data only on the 2012 sheet (and every queue
+result is 0).  To cover the 2024 sheet and non-zero queue lengths, this
+script writes synthetic inputs into the *unchanged* formula
 rows of carpark_calcs.xlsx, recalculates headless with LibreOffice and stores
 inputs + recalculated results in tests/golden/libreoffice_recalc.json.
 
@@ -103,7 +103,7 @@ def main() -> None:
                 row = {k: v[f"{c}{r}"].value for k, c in lay.outputs.items()}
                 row["queue_cells_are_formulas"] = all(
                     str(fws[f"{lay.outputs[k]}{r}"].value).startswith("=") for k in ("lb_lhu", "llu"))
-                area_col = lay.outputs["Qd" if key == "1991" else "Qc"]
+                area_col = lay.outputs["Qc"]
                 m = re.search(r"([\d.]+)\*[A-Z]+\d+\)$", str(fws[f"{area_col}{r}"].value))
                 row["sheet_area_rate"] = float(m.group(1)) if m else None
                 row["row"] = r
