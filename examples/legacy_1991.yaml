@@ -1,7 +1,0 @@
-# Data from the "Car Park Vent - AS1668 1991" sheet (rows 27-28). Superseded edition.
-edition: "1991"
-project: {name: "Example (workbook 1991 sheet)", revision: "1", arch_reference: "23/05/2014", prepared_by: Daniel Zhang}
-exit_lanes: 1
-levels:
-  - {name: B1, n1: 148, n2: 180, d1: 45, d2: 45, d3: 15, d4: 15, P: 0.5, A: 5000}
-  - {name: B2, n1: 180, n2: 0, d1: 35, d2: 35, d3: 0, d4: 0, P: 0.5, A: 5000}

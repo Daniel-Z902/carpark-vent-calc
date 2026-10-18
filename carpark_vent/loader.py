@@ -2,7 +2,7 @@
 
 Schema (see examples/ and README.md)::
 
-    edition: "2012"            # 2024 | 2012 | 2002 | 1991
+    edition: "2012"            # optional; 2012 (default) or 2024
     project: {name, number, revision, arch_reference, client,
               prepared_by, checked_by, date, company, notes}
     exit_lanes: 1              # L; null to skip the queuing assessment
@@ -29,11 +29,11 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
-from carpark_vent.editions import Edition, get_edition
+from carpark_vent.editions import DEFAULT_EDITION, Edition, get_edition
 from carpark_vent.models import Level, Project, ProjectInfo
 
-_LEVEL_KEYS = {"name", "comment", "n1", "n2", "d1", "d2", "d3", "d4", "T", "E", "F", "P", "P1", "P2", "A"}
-_DISTANCES = ("d1", "d2", "d3", "d4")
+_LEVEL_KEYS = {"name", "comment", "n1", "n2", "d1", "d2", "T", "E", "F", "P", "P1", "P2", "A"}
+_DISTANCES = ("d1", "d2")
 _TOP_KEYS = {"edition", "project", "exit_lanes", "makeup_ratio", "queue_note", "levels"}
 
 
@@ -98,9 +98,10 @@ def project_from_dict(data: Mapping[str, Any]) -> Project:
     unknown = set(data) - _TOP_KEYS
     if unknown:
         raise ValueError(f"unknown top-level keys {sorted(unknown)}")
-    if "edition" not in data:
-        raise ValueError("'edition' is required (2024, 2012, 2002 or 1991)")
-    edition = get_edition(data["edition"])
+    raw_edition = data.get("edition", DEFAULT_EDITION)
+    if raw_edition is None or raw_edition == "":
+        raw_edition = DEFAULT_EDITION
+    edition = get_edition(raw_edition)
     info_data = dict(data.get("project") or {})
     info_fields = set(ProjectInfo.__dataclass_fields__)
     bad = set(info_data) - info_fields

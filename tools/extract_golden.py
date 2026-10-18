@@ -56,7 +56,7 @@ def extract(path: Path) -> dict:
             "input": {
                 "edition": key,
                 "exit_lanes": None if exit_lanes in (None, "") else exit_lanes,
-                "makeup_ratio": v[lay.makeup_ratio_cell].value if lay.makeup_ratio_cell else None,
+                "makeup_ratio": v[lay.makeup_ratio_cell].value,
                 "levels": levels,
             },
             "workbook_q_min": v[lay.q_min_cell].value,

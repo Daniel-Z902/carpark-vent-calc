@@ -7,7 +7,7 @@ licensing rule in AGENTS.md).
 ## Quick wins
 1. **Auto n2 chaining.** Optional `exits_via: <level name>` per level, so n2
    is filled in from the levels whose exit route passes through, replacing the
-   hand-entered `=C34` / `=C28+D28` cells.
+   hand-entered `=C34` cell on the 2012 sheet.
 2. **Workbook importer.** `carpark-vent import carpark_calcs.xlsx --sheet 2012`
    turns an existing job workbook into a YAML input (using `layout.py`).
 3. **Comparison mode.** Run one project against several editions side by side
@@ -46,5 +46,5 @@ licensing rule in AGENTS.md).
 16. GitHub Actions CI: pytest on Python 3.10-3.13, ruff, build the wheel, and
     upload the example reports as artifacts.
 17. Resolve the workbook quirks in METHOD.md section 7 once Daniel confirms
-    the intended behaviour (2002 area rate, hard-coded queue zeros, the
-    300 l/s per m queue constant).
+    the intended behaviour (hard-coded queue zeros on the 2012 and 2024
+    sheets, the 300 l/s per m queue constant).

@@ -37,10 +37,17 @@ def test_example_2012_reproduces_workbook_totals():
 
 
 def test_template_command_round_trips(tmp_path, capsys):
-    for ed in ("2024", "2012", "2002", "1991"):
+    assert main(["template"]) == 0
+    default_text = capsys.readouterr().out
+    assert 'edition: "2012"' in default_text
+    default_file = tmp_path / "t-default.yaml"
+    default_file.write_text(default_text)
+    assert load_project(default_file).edition_key == "2012"
+    for ed in ("2012", "2024"):
         assert main(["template", ed]) == 0
         f = tmp_path / f"t{ed}.yaml"
         f.write_text(capsys.readouterr().out)
+        assert f'edition: "{ed}"' in f.read_text()
         calculate_project(load_project(f))
 
 
@@ -70,7 +77,7 @@ def test_html_contains_sections():
 
 
 @pytest.mark.skipif(not shutil.which("soffice"), reason="LibreOffice not installed")
-@pytest.mark.parametrize("case_id", ["lo-2024-2", "lo-2012-2", "lo-2002-2", "lo-1991-2"])
+@pytest.mark.parametrize("case_id", ["lo-2024-2", "lo-2012-2"])
 def test_live_formula_workbook_recalculates_to_python_values(case_id, tmp_path):
     case = next(c for c in load_cases("libreoffice_recalc.json") if c["id"] == case_id)
     res = calculate_project(project_from_dict(case["input"]))

@@ -15,7 +15,7 @@ DISCLAIMER = (
 )
 
 UNITS = {
-    "n1": "", "n2": "", "d1": "m", "d2": "m", "d3": "m", "d4": "m", "T": "", "E": "", "F": "",
+    "n1": "", "n2": "", "d1": "m", "d2": "m", "T": "", "E": "", "F": "",
     "P": "", "P1": "", "P2": "", "A": "m2",
 }
 
@@ -23,32 +23,21 @@ UNITS = {
 def legend(ed: Edition) -> list[tuple[str, str]]:
     """Symbol definitions in our own words, by edition."""
     t_staff = ed.staff_table_ref or ""
-    rows = [("n1", "Car spaces on the level considered")]
-    if ed.key == "1991":
-        rows += [
-            ("n2", "Car spaces elsewhere whose entry or exit route passes through this level"),
-            ("d1", "Mean exit driving distance for cars parked on this level (m)"),
-            ("d2", "Mean entry driving distance for cars parked on this level (m)"),
-            ("d3", "Mean exit driving distance through this level for the n2 cars (m)"),
-            ("d4", "Mean entry driving distance through this level for the n2 cars (m)"),
-            ("P", f"Parking usage factor ({ed.usage_table_ref})"),
-        ]
+    rows = [
+        ("n1", "Car spaces on the level considered"),
+        ("n2", "Car spaces elsewhere whose exit route passes through this level"),
+        ("d1", "Mean exit driving distance for cars parked on this level (m)"),
+        ("d2", "Mean driving distance through this level for the n2 cars (m)"),
+    ]
+    if ed.key == "2024":
+        rows += [("P1", f"Parking usage factor for the n1 cars ({ed.usage_table_ref})"),
+                 ("P2", f"Parking usage factor for the n2 cars ({ed.usage_table_ref})")]
     else:
-        rows += [
-            ("n2", "Car spaces elsewhere whose exit route passes through this level"),
-            ("d1", "Mean exit driving distance for cars parked on this level (m)"),
-            ("d2", "Mean driving distance through this level for the n2 cars (m)"),
-        ]
-        if ed.key == "2024":
-            rows += [("P1", f"Parking usage factor for the n1 cars ({ed.usage_table_ref})"),
-                     ("P2", f"Parking usage factor for the n2 cars ({ed.usage_table_ref})")]
-        else:
-            rows += [("P", f"Parking usage factor ({ed.usage_table_ref})")]
-        rows += [("T", f"Vehicle type factor ({ed.vehicle_table_ref})")]
-        if "E" in ed.level_fields:
-            rows += [("E", f"Staff exposure factor ({t_staff})")]
-        rows += [("F", f"Staff usage factor ({t_staff})")]
-    rows += [("A", "Floor area of the level (m2)")]
+        rows += [("P", f"Parking usage factor ({ed.usage_table_ref})")]
+    rows += [("T", f"Vehicle type factor ({ed.vehicle_table_ref})")]
+    if "E" in ed.level_fields:
+        rows += [("E", f"Staff exposure factor ({t_staff})")]
+    rows += [("F", f"Staff usage factor ({t_staff})"), ("A", "Floor area of the level (m2)")]
     return rows
 
 
@@ -73,7 +62,6 @@ USAGE_LABELS = {
     "retail": "Retail",
     "entertainment_sports": "Entertainment / sports",
     "vehicle_depot": "Vehicle depots",
-    "diesel_vehicle_depot": "Diesel vehicle depots",
 }
 VEHICLE_LABELS = {
     "none": "No special vehicle population",
