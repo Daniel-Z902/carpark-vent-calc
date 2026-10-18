@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+dist/
+build/
+
+# Generated reports
+out/
+reports/
+*.pdf
+!docs/**/*.pdf
+
+# Source workbook and any project spreadsheets: kept out of git by default
+# (may contain descriptive text adapted from Standards; see AGENTS.md).
+*.xlsx
+*.xlsm
+*.xls
+~$*
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

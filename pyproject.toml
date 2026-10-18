@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "carpark-vent"
+version = "0.1.0"
+description = "Car park mechanical ventilation calculations (AS 1668.2 editions as implemented in n2's workbook)"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Daniel Zhang", email = "d.zhang@n2ec.com.au" }]
+dependencies = ["openpyxl>=3.1", "PyYAML>=6.0"]
+
+[project.optional-dependencies]
+pdf = ["reportlab>=4.0"]
+dev = ["pytest>=8", "reportlab>=4.0"]
+
+[project.scripts]
+carpark-vent = "carpark_vent.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["carpark_vent*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [".", "tests"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["carpark_vent"]
+known-local-folder = ["conftest", "extract_golden"]

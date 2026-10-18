@@ -1,0 +1,10 @@
+{
+  "edition": "2002",
+  "project": {"name": "Example (workbook 2002 sheet)", "revision": "1", "arch_reference": "23/05/2014",
+              "prepared_by": "Daniel Zhang"},
+  "exit_lanes": 1,
+  "levels": [
+    {"name": "B1", "n1": 148, "n2": 180, "d1": 45, "d2": 15, "T": 1, "F": 1, "P": 0.5, "A": 5000},
+    {"name": "B2", "n1": 180, "n2": 0, "d1": 35, "d2": 0, "T": 1, "F": 1, "P": 0.5, "A": 5000}
+  ]
+}

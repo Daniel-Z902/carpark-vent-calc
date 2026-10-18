@@ -1,0 +1,37 @@
+# Example reproducing the data on the "Car Park Vent - AS1668 2012" sheet of
+# carpark_calcs.xlsx (rows 34-35).  Expected totals: 11.445 m3/s exhaust,
+# 9.156 m3/s make-up (see tests/golden/excel_cached.json).
+edition: "2012"
+project:
+  name: "Example residential basement (workbook 2012 sheet)"
+  number: "N2-EXAMPLE"
+  revision: A
+  arch_reference: "-"
+  client: ""
+  prepared_by: Daniel Zhang
+  checked_by: ""
+  date: "2026-10-19"
+  notes: "Two-level residential basement car park. Exhaust totals exclude loading dock."
+exit_lanes: 1
+makeup_ratio: 0.8          # workbook Q31 (note: 75-90%)
+levels:
+  - name: BASEMENT 2
+    n1: 64
+    n2: 0
+    d1: [91.31, 71.09, 48.2, 53.57, 33.53, 12.21]   # averaged, as =(...)/6 in E34
+    d2: 0
+    T: none
+    E: 1
+    F: 1
+    P: residential
+    A: 2233.95
+  - name: BASEMENT 1
+    n1: 53
+    n2: 64                  # = BASEMENT 2 spaces exiting through this level (D35 = C34)
+    d1: [93.95, 73.73, 53.1, 55.23, 36.17, 14.85]
+    d2: 68.97
+    T: none
+    E: 1
+    F: 1
+    P: residential
+    A: 2344.15

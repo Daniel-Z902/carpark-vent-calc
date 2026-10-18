@@ -1,0 +1,51 @@
+# Illustrative 2024-edition project (synthetic numbers - not from a real job).
+edition: "2024"
+project:
+  name: "Example mixed-use car park"
+  number: "N2-0000"
+  revision: A
+  arch_reference: "DA set, rev C"
+  client: "Example Developments Pty Ltd"
+  prepared_by: Daniel Zhang
+  checked_by: ""
+  date: "2026-10-19"
+exit_lanes: 1
+makeup_ratio: 0.8
+queue_note: "No dedicated queuing areas applicable"
+levels:
+  - name: BASEMENT 3
+    comment: Residential
+    n1: 120
+    n2: 0
+    d1: 85
+    d2: 0
+    T: none
+    E: 1
+    F: 1
+    P1: residential
+    P2: residential
+    A: 3600
+  - name: BASEMENT 2
+    comment: Residential
+    n1: 110
+    n2: 120
+    d1: 70
+    d2: 55
+    T: none
+    E: 1
+    F: 1
+    P1: residential
+    P2: residential
+    A: 3400
+  - name: BASEMENT 1
+    comment: Retail
+    n1: 90
+    n2: 230
+    d1: 60
+    d2: 40
+    T: none
+    E: 1
+    F: 1
+    P1: retail
+    P2: residential
+    A: 3100
